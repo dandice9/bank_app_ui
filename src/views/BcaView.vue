@@ -66,6 +66,7 @@ export default defineComponent({
                 is_loading: false,
                 is_success: false,
                 is_submitting: false,
+                is_complete: false,
                 error_message: '',
                 transfer_form_data: {
                     tf_appli_code: '',
@@ -167,6 +168,7 @@ export default defineComponent({
         openTransferFund: function () { this.page = 'transfer_fund'; this.loadTransferForm() },
         loadTransferForm: async function () {
             try {
+                this.transfer_fund_form.is_complete = false
                 this.transfer_fund_form.is_success = false
                 this.transfer_fund_form.is_loading = true
                 const transferFormRes = await axios.post(bcaPath.transfer_form, this.account.token)
@@ -198,6 +200,7 @@ export default defineComponent({
         },
         getStatement: async function(){
             this.statement_error_message = ''
+            this.statement_list = []
 
             if(!this.statement.start){
                 this.statement_error_message = 'pick start date'
@@ -367,14 +370,15 @@ export default defineComponent({
 
                         if(transferResult === "1"){
                             this.transfer_fund_form.is_success = true
+                            this.transfer_fund_form.is_complete = true
                         }
                         else {
                             this.transfer_fund_form.error_message = 'invalid appli code'
+                            this.loadTransferForm()
                         }
                     } catch (error) {
                         handleError(error)
-                    }   
-
+                    }
                 }
             }
             else {
@@ -452,7 +456,7 @@ export default defineComponent({
                     <div v-if="transfer_fund_form.is_success" class="text-green-900">
                         <small>Transfer success!</small>
                     </div>
-                    <div v-if="!transfer_fund_form.is_loading">
+                    <div v-if="!transfer_fund_form.is_loading && !transfer_fund_form.is_complete">
                         <div class="max-w-sm">
                             <div class="mt-2">
                                 <select class="p-2 border shadow-sm w-full" v-model="transfer_fund_form.transfer_form_data.tf_recipient_selected">
